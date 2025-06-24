@@ -2,7 +2,7 @@
 import pool from '../db/db.js';
 
 export const viewPost = async (req, res) => {
-  const { post_id } = req.body;
+const { post_id } = req.params;
   const uid = req.user.id;
 
   if (!post_id) return res.status(400).json({ message: "'post_id' required." });
@@ -113,6 +113,9 @@ export const getMyPosts = async (req, res) => {
       `SELECT id, title, content, user_id FROM posts WHERE user_id = $1 ORDER BY id DESC`,
       [uid]
     );
+
+    console.log("Posts found:", posts.rows); // ✅
+    console.log("Request user ID:", req.user.id); // Should match user_id in posts table
 
     res.status(200).json({ posts: posts.rows });
 

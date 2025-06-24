@@ -1,0 +1,26 @@
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: #fdfdfd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.navbar-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.navbar-icons .icon {
+  margin-left: 15px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #444;
+  transition: color 0.2s ease;
+}
+
+.navbar-icons .icon:hover {
+  color: #000;
+}
