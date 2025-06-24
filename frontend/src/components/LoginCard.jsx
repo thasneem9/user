@@ -5,13 +5,14 @@ import { useSetRecoilState } from 'recoil';
 import { userAtom } from '../atoms/userAtom.js';
 import { authScreenAtom } from '../atoms/authScreenAtom.js';
 
-
+import { useNavigate } from 'react-router-dom';
 const LoginCard = () => {
   const setUser = useSetRecoilState(userAtom);
   const setScreen = useSetRecoilState(authScreenAtom);
   const [form, setForm] = useState({ username: '', password: '' });
   const onChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+  const navigate=useNavigate()
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -25,6 +26,7 @@ const handleSubmit = async (e) => {
     setUser({ username: form.username }); 
 
     alert("Login successful!");
+    navigate("/")
   } catch (err) {
     console.error(err.response?.data || err);
     alert(err.response?.data?.message || 'Login failed');

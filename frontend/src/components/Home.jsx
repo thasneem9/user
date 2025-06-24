@@ -17,9 +17,7 @@ const Home = () => {
   const [activeNote, setActiveNote] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", content: "" });
- 
-
-const [showUserModal, setShowUserModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
 
 
   const handleLogout = () => {
@@ -93,10 +91,10 @@ const [showUserModal, setShowUserModal] = useState(false);
           )}
         </div>
 
-        {/* ➕ Floating Create Button */}
+
         <button className="create-button" onClick={() => setShowCreateModal(true)}>＋</button>
 
-        {/* ✍️ Create Post Modal */}
+    
         {showCreateModal && (
           <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>

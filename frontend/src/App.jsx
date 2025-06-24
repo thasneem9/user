@@ -10,9 +10,7 @@ function AppRoutes() {
   return (
      <Routes>
       <Route path="/" element={user ? <Home /> : <Navigate to="/auth" replace />}/>
-{/*       <Route path="/auth" element={ <AuthPage /> }/>
- */}
- <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" replace />}/>
+    <Route path="/auth" element={ <AuthPage /> }/>
     <Route path="*" element={<Navigate to={user ? '/' : '/auth'} replace />}/>
     </Routes>
   );
