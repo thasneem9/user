@@ -20,7 +20,10 @@
   color: #444;
   transition: color 0.2s ease;
 }
-
+.navbar-icons{
+  display: flex;
+  gap:20px;
+}
 .navbar-icons .icon:hover {
   color: #000;
 }

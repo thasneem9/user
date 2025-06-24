@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import NoteCard from "../components/NoteCard";
 import NoteModal from "../components/NoteModal";
+ import UserModal from "../components/UserModal"; 
 
 const Home = () => {
   const user = useRecoilValue(userAtom);
@@ -16,6 +17,10 @@ const Home = () => {
   const [activeNote, setActiveNote] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", content: "" });
+ 
+
+const [showUserModal, setShowUserModal] = useState(false);
+
 
   const handleLogout = () => {
     setUser(null);
@@ -65,7 +70,7 @@ const Home = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        setNotes([data.post, ...notes]); // prepend new note
+        setNotes([data.post, ...notes]);
         setNewPost({ title: "", content: "" });
         setShowCreateModal(false);
       });
@@ -73,7 +78,9 @@ const Home = () => {
 
   return (
     <>
-      <Navbar onLogout={handleLogout} />
+    <Navbar onLogout={handleLogout} onUserClick={() => setShowUserModal(true)} />
+     
+
       <div className="home-container">
         <h1>WELCOME, {user?.username}</h1>
         <div className="notes-container">
@@ -114,8 +121,21 @@ const Home = () => {
           </div>
         )}
 
-        {/* View full post */}
-        <NoteModal post={activeNote} onClose={() => setActiveNote(null)} />
+   <NoteModal
+  post={activeNote}
+  onClose={() => setActiveNote(null)}
+  onNoteUpdated={(updated) => {
+    setNotes((prev) =>
+      prev.map((note) => (note.id === updated.id ? updated : note))
+    );
+    setActiveNote(updated);
+  }}
+  onNoteDeleted={(deletedId) => {
+    setNotes((prev) => prev.filter((note) => note.id !== deletedId));
+    setActiveNote(null);
+  }}
+/>
+
       </div>
     </>
   );

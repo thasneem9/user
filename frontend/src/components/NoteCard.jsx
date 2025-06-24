@@ -1,4 +1,3 @@
-// components/NoteCard.jsx
 import React from 'react';
 import './styles/NoteCard.css';
 
