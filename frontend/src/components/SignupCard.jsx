@@ -16,12 +16,12 @@ const SignupCard = () => {
     e.preventDefault();
     try {
       const { data } = await axios.post('/api/users/signup', form, {
-        withCredentials: true, // allow sending refresh token cookie
+        withCredentials: true, 
       });
 
  
       alert('Signup successful!');
-      setScreen('login'); // switch to login screen
+      setScreen('login'); 
     } catch (err) {
       console.error(err.response?.data || err);
       alert(err.response?.data?.message || 'Signup failed');
