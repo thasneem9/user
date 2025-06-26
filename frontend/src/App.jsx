@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { userAtom } from './atoms/userAtom.js';
 import AuthPage from './pages/AuthPage';
 import Home from './components/Home.jsx';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function AppRoutes() {
   const user = useRecoilValue(userAtom);
   return (
@@ -21,6 +22,7 @@ export default function App() {
     <RecoilRoot>
       <Router>
         <AppRoutes />
+          <ToastContainer position="top-center" autoClose={1000} />
       </Router>
     </RecoilRoot>
   );

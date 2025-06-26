@@ -7,6 +7,7 @@ import { authScreenAtom } from '../atoms/authScreenAtom.js';
 
 import { useNavigate } from 'react-router-dom';
 import { ClipLoader } from "react-spinners";
+import { toast } from 'react-toastify';
 const LoginCard = () => {
   const setUser = useSetRecoilState(userAtom);
   const setScreen = useSetRecoilState(authScreenAtom);
@@ -29,11 +30,12 @@ const handleSubmit = async (e) => {
 
     setUser({ username: form.username }); 
 
-    alert("Login successful!");
+   toast.success("Login successful!");
     navigate("/")
   } catch (err) {
     console.error(err.response?.data || err);
-    alert(err.response?.data?.message || 'Login failed');
+  
+      toast.error(err.response?.data?.message || 'Login failed');
   }finally{
       setLoading(false);
   }

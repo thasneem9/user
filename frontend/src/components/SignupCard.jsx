@@ -4,7 +4,7 @@ import axios from 'axios';
 import { userAtom } from '../atoms/userAtom.js';
 import { authScreenAtom } from '../atoms/authScreenAtom.js';
 import './styles/signupcard.css'
-
+import { toast } from 'react-toastify';
 const SignupCard = () => {
   const setScreen = useSetRecoilState(authScreenAtom);
   const [form, setForm] = useState({ username: '', password: '' });
@@ -20,11 +20,11 @@ const SignupCard = () => {
       });
 
  
-      alert('Signup successful!');
+   toast.success("Signup successful!");
       setScreen('login'); 
     } catch (err) {
       console.error(err.response?.data || err);
-      alert(err.response?.data?.message || 'Signup failed');
+      toast.error(err.response?.data?.message || 'Signup failed');
     }
   };
 
