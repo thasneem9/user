@@ -1,4 +1,10 @@
 /* styles/home.css */
+.note-modal-spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 body {
   background-color: #f3f4f6;

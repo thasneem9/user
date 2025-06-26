@@ -107,18 +107,21 @@ export const updatePost = async (req, res) => {
 
 export const getMyPosts = async (req, res) => {
   const uid = req.user.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
 
   try {
     const posts = await pool.query(
-      `SELECT id, title, content, user_id FROM posts WHERE user_id = $1 ORDER BY id DESC`,
-      [uid]
+      `SELECT id, title, content, user_id
+       FROM posts
+       WHERE user_id = $1
+       ORDER BY id DESC
+       LIMIT $2 OFFSET $3`,
+      [uid, limit, offset]
     );
 
-    console.log("Posts found:", posts.rows); // ✅
-    console.log("Request user ID:", req.user.id); // Should match user_id in posts table
-
     res.status(200).json({ posts: posts.rows });
-
   } catch {
     res.status(500).json({ message: 'Server error.' });
   }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import './styles/home.css';
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { userAtom } from "../atoms/userAtom.js";
@@ -6,18 +6,24 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import NoteCard from "../components/NoteCard";
 import NoteModal from "../components/NoteModal";
- import UserModal from "../components/UserModal"; 
+
+ import NoteSkeleton from "../components/NoteSkeleton"; 
+ import { ClipLoader } from 'react-spinners';
+
 
 const Home = () => {
   const user = useRecoilValue(userAtom);
   const setUser = useSetRecoilState(userAtom);
   const navigate = useNavigate();
+  const loaderRef = useRef(null);
+
 
   const [notes, setNotes] = useState([]);
   const [activeNote, setActiveNote] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [showUserModal, setShowUserModal] = useState(false);
+const [noteLoading, setNoteLoading] = useState(false);
 
 
   const handleLogout = () => {
@@ -26,35 +32,70 @@ const Home = () => {
     navigate("/auth");
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+ const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(false);
+const [hasMore, setHasMore] = useState(true);
 
-    fetch("/api/posts/myposts", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+useEffect(() => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
+
+  setLoading(true);
+  fetch(`/api/posts/myposts?page=${page}&limit=10`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.posts.length === 0) setHasMore(false);
+   setNotes((prev) => {
+  const combined = [...prev, ...data.posts];
+  const uniquePosts = Array.from(new Map(combined.map(p => [p.id, p])).values());
+  return uniquePosts;
+});
+
+      setLoading(false);
     })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch posts");
-        setNotes(data.posts || []);
-      })
-      .catch((err) => {
-        console.error("Error fetching notes:", err.message);
-        navigate("/auth");
-      });
-  }, []);
+    .catch(err => {
+      console.error("Error fetching notes:", err.message);
+      setLoading(false);
+      navigate("/auth");
+    });
+}, [page]);
+useEffect(() => {
+  if (loading || !hasMore) return;
 
-  const handleCardClick = (post_id) => {
-    fetch(`/api/posts/viewPost/${post_id}`, {
-  method: "GET",
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-  },
-})
-      .then((res) => res.json())
-      .then((data) => setActiveNote(data.post));
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  });
+
+  if (loaderRef.current) observer.observe(loaderRef.current);
+
+  return () => {
+    if (loaderRef.current) observer.unobserve(loaderRef.current);
   };
+}, [loading, hasMore]);
+
+
+const handleCardClick = (post_id) => {
+  setNoteLoading(true);
+  fetch(`/api/posts/viewPost/${post_id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setActiveNote(data.post);
+    })
+    .catch((err) => console.error("Note fetch error:", err))
+    .finally(() => setNoteLoading(false));
+};
+
   
 
   const handleCreatePost = () => {
@@ -74,7 +115,7 @@ const Home = () => {
       });
   };
 
-  return (
+  return(
     <>
     <Navbar onLogout={handleLogout} onUserClick={() => setShowUserModal(true)} />
      
@@ -82,14 +123,26 @@ const Home = () => {
       <div className="home-container">
         <h1>WELCOME, {user?.username}</h1>
         <div className="notes-container">
-          {notes.length === 0 ? (
-            <p>No notes found.</p>
-          ) : (
-            notes.map((note) => (
-              <NoteCard key={note.id} note={note} onClick={handleCardClick} />
-            ))
-          )}
-        </div>
+        {notes.length === 0 && !loading && <p>No notes found.</p>}
+
+{notes.map((note) => (
+  <NoteCard key={note.id} note={note} onClick={handleCardClick} />
+))}
+
+{/* Show skeletons during both initial and scroll-based loading */}
+{loading && (
+  <>
+    <NoteSkeleton />
+    <NoteSkeleton />
+    <NoteSkeleton />
+  </>
+)}
+
+
+       
+        <div ref={loaderRef} />
+      </div>
+
 
 
         <button className="create-button" onClick={() => setShowCreateModal(true)}>＋</button>
@@ -119,22 +172,33 @@ const Home = () => {
           </div>
         )}
 
-   <NoteModal
-  post={activeNote}
-  onClose={() => setActiveNote(null)}
-  onNoteUpdated={(updated) => {
-    setNotes((prev) =>
-      prev.map((note) => (note.id === updated.id ? updated : note))
-    );
-    setActiveNote(updated);
-  }}
-  onNoteDeleted={(deletedId) => {
-    setNotes((prev) => prev.filter((note) => note.id !== deletedId));
-    setActiveNote(null);
-  }}
-/>
+ {noteLoading && (
+  <div className="note-modal-spinner">
+    <ClipLoader size={30} color="#333" />
+  </div>
+)}
+
+{!noteLoading && activeNote && (
+  <NoteModal
+    post={activeNote}
+    onClose={() => setActiveNote(null)}
+    onNoteUpdated={(updated) => {
+      setNotes((prev) =>
+        prev.map((note) => (note.id === updated.id ? updated : note))
+      );
+      setActiveNote(updated);
+    }}
+    onNoteDeleted={(deletedId) => {
+      setNotes((prev) => prev.filter((note) => note.id !== deletedId));
+      setActiveNote(null);
+    }}
+  />
+)}
+
 
       </div>
+   
+ 
     </>
   );
 };

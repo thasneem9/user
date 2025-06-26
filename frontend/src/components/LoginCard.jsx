@@ -6,6 +6,7 @@ import { userAtom } from '../atoms/userAtom.js';
 import { authScreenAtom } from '../atoms/authScreenAtom.js';
 
 import { useNavigate } from 'react-router-dom';
+import { ClipLoader } from "react-spinners";
 const LoginCard = () => {
   const setUser = useSetRecoilState(userAtom);
   const setScreen = useSetRecoilState(authScreenAtom);
@@ -13,9 +14,12 @@ const LoginCard = () => {
   const onChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
   const navigate=useNavigate()
+  const [loading, setLoading] = useState(false);
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
+   setLoading(true);
   try {
      const { data } = await api.post('/users/login', form, {
       withCredentials: true, 
@@ -30,6 +34,8 @@ const handleSubmit = async (e) => {
   } catch (err) {
     console.error(err.response?.data || err);
     alert(err.response?.data?.message || 'Login failed');
+  }finally{
+      setLoading(false);
   }
 };
 
@@ -52,7 +58,11 @@ const handleSubmit = async (e) => {
           value={form.password}
           onChange={onChange}
         />
-        <button type="submit">Log in</button>
+    
+<button type="submit" disabled={loading}>
+  {loading ? <ClipLoader size={20} color="#fff" /> : "Log in"}
+</button>
+
       </form>
 
       <p className="text-sm mt-3"> No account?
