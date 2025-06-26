@@ -9,6 +9,7 @@ import NoteModal from "../components/NoteModal";
 
  import NoteSkeleton from "../components/NoteSkeleton"; 
  import { ClipLoader } from 'react-spinners';
+import { FaSearch } from 'react-icons/fa';
 
 
 const Home = () => {
@@ -16,6 +17,7 @@ const Home = () => {
   const setUser = useSetRecoilState(userAtom);
   const navigate = useNavigate();
   const loaderRef = useRef(null);
+  
 
 
   const [notes, setNotes] = useState([]);
@@ -24,6 +26,22 @@ const Home = () => {
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [showUserModal, setShowUserModal] = useState(false);
 const [noteLoading, setNoteLoading] = useState(false);
+
+const [searchQuery, setSearchQuery] = useState('');
+const [filteredNotes, setFilteredNotes] = useState([]);
+useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    const query = searchQuery.toLowerCase();
+    setFilteredNotes(
+      notes.filter(note =>
+        note.title.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query)
+      )
+    );
+  }, 300); // debounce delay
+
+  return () => clearTimeout(timeoutId);
+}, [searchQuery, notes]);
 
 
   const handleLogout = () => {
@@ -121,13 +139,25 @@ const handleCardClick = (post_id) => {
      
 
       <div className="home-container">
-        <h1>WELCOME, {user?.username}</h1>
-        <div className="notes-container">
-        {notes.length === 0 && !loading && <p>No notes found.</p>}
+  <div className="search-bar">
+  <input
+    type="text"
+    placeholder="Search notes..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+  />
+  <FaSearch className="search-icon" />
+</div>
 
-{notes.map((note) => (
-  <NoteCard key={note.id} note={note} onClick={handleCardClick} />
-))}
+        <div className="notes-container">
+        {filteredNotes.length === 0 && !loading ? (
+  <p>No notes found.</p>
+) : (
+  filteredNotes.map((note) => (
+    <NoteCard key={note.id} note={note} onClick={handleCardClick} />
+  ))
+)}
+
 
 {/* Show skeletons during both initial and scroll-based loading */}
 {loading && (
