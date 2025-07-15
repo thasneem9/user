@@ -1,18 +1,23 @@
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState,useRef ,lazy,Suspense} from "react";
 import './styles/home.css';
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { userAtom } from "../atoms/userAtom.js";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import NoteCard from "../components/NoteCard";
-import NoteModal from "../components/NoteModal";
+import useDebounce from "../hooks/useDebounce.js";
 
  import NoteSkeleton from "../components/NoteSkeleton"; 
  import { ClipLoader } from 'react-spinners';
 import { FaSearch } from 'react-icons/fa';
 
+import { useMemo } from "react";
 
 const Home = () => {
+
+const NoteModal=lazy(()=>import('./NoteModal.jsx'))
+
+
   const user = useRecoilValue(userAtom);
   const setUser = useSetRecoilState(userAtom);
   const navigate = useNavigate();
@@ -28,20 +33,16 @@ const Home = () => {
 const [noteLoading, setNoteLoading] = useState(false);
 
 const [searchQuery, setSearchQuery] = useState('');
-const [filteredNotes, setFilteredNotes] = useState([]);
-useEffect(() => {
-  const timeoutId = setTimeout(() => {
-    const query = searchQuery.toLowerCase();
-    setFilteredNotes(
-      notes.filter(note =>
-        note.title.toLowerCase().includes(query) ||
-        note.content.toLowerCase().includes(query)
-      )
-    );
-  }, 300); // debounce delay
+const debouncedQuery = useDebounce(searchQuery, 300);
 
-  return () => clearTimeout(timeoutId);
-}, [searchQuery, notes]);
+
+  const filteredNotes = useMemo(() => {
+    const q = debouncedQuery.toLowerCase();
+    return notes.filter(note =>
+      note.title.toLowerCase().includes(q) ||
+      note.content.toLowerCase().includes(q)
+    );
+  }, [debouncedQuery, notes]);
 
 
   const handleLogout = () => {
@@ -151,7 +152,7 @@ const handleCardClick = (post_id) => {
 
         <div className="notes-container">
         {filteredNotes.length === 0 && !loading ? (
-  <p>No notes found.</p>
+  <p style={{textAlign:'center',margin:'auto', fontSize:'30'}}>No notes found.</p>
 ) : (
   filteredNotes.map((note) => (
     <NoteCard key={note.id} note={note} onClick={handleCardClick} />
@@ -209,6 +210,7 @@ const handleCardClick = (post_id) => {
 )}
 
 {!noteLoading && activeNote && (
+  <Suspense  fallback={<div className="note-modal-spinner"><ClipLoader size={30} color="#333" /></div>}>
   <NoteModal
     post={activeNote}
     onClose={() => setActiveNote(null)}
@@ -223,6 +225,7 @@ const handleCardClick = (post_id) => {
       setActiveNote(null);
     }}
   />
+  </Suspense>
 )}
 
 

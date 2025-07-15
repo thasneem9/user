@@ -1,5 +1,5 @@
 import React from 'react';
-import './styles/NoteCard.css';
+import './styles/notecard.css';
 
 export default function NoteCard({ note, onClick }) {
   return (

@@ -1,17 +1,19 @@
-/* NoteCard.css */
+
+
+
 .note-card {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 15px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: transform 0.1s ease;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 15px;
+  backdrop-filter: blur(12px);
+  padding: 20px;
+  color: #7c89a7; /* dark gray */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.2s ease;
 }
 
 .note-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+  transform: scale(1.02);
 }
 
 .note-card h3 {
@@ -22,4 +24,12 @@
 .note-card p {
   margin: 0;
   color: #555;
+}
+
+
+.note-card h3 {
+  color: #111827;
+}
+.note-card p {
+  color: #374151;
 }

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import postRoutes from "./routes/postRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import cookieParser from 'cookie-parser';
+import storeRoutes from './routes/storeRoutes.js'
 dotenv.config();
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use(cookieParser())
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/store", storeRoutes);
 
 
 app.get('/', (req, res) => {
