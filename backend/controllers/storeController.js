@@ -14,7 +14,7 @@ const addProduct = async (req, res) => {
     }
 
     await pool.query(
-      'INSERT INTO store (name, category, description, price) VALUES ($1, $2, $3, $4)',
+      'CALL add_product_proc($1, $2, $3, $4)',
       [name, category, description, price]
     );
 
@@ -24,26 +24,35 @@ const addProduct = async (req, res) => {
   }
 };
 
+
 const getFilteredStores = async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { minPrice, maxPrice, category } = req.query;
 
-    const values = [
-      minPrice || null,
-      maxPrice || null,
-      category || null,
-    ];
-    //like values = [100, null, 'Laptop']
+    const cursorName = 'filtered_cursor';
 
-    const query = 'SELECT * FROM get_filtered_stores($1, $2, $3)';
-    const result = await pool.query(query, values);
-
+    await client.query('BEGIN');
+    await client.query(
+      'CALL get_filtered_stores_proc($1, $2, $3, $4)',
+      [minPrice || null, maxPrice || null, category || null, cursorName]
+    );
+    const result = await client.query(`FETCH ALL FROM ${cursorName}`);
+    await client.query('COMMIT');
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error('Error fetching filtered stores:', err.message);
+
+    await client.query('ROLLBACK');
+    console.error('Error executing stored procedure:', err.message);
     res.status(500).json({ error: 'Internal Server Error' });
+
+  } finally {
+
+    client.release();
   }
 };
+
 
 
 export { addProduct, getFilteredStores };
