@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState } from "react";
 
 export default function useDebounce(value, delay = 300) {
@@ -8,5 +10,7 @@ export default function useDebounce(value, delay = 300) {
     return () => clearTimeout(timer);
   }, [value, delay]);
 
-  return debounced;
+  return debounced
 }
+
+

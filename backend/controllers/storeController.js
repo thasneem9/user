@@ -1,5 +1,5 @@
 import pool from '../db/db.js';
-
+import redisClient from '../utils/redisClient.js';
 
 const addProduct = async (req, res) => {
   try {
@@ -24,14 +24,23 @@ const addProduct = async (req, res) => {
   }
 };
 
-
 const getFilteredStores = async (req, res) => {
+  
   const client = await pool.connect();
+  const { minPrice, maxPrice, category } = req.query;
+  const cacheKey = `filtered:${minPrice || 'any'}:${maxPrice || 'any'}:${category || 'any'}`;
+
 
   try {
-    const { minPrice, maxPrice, category } = req.query;
-
+   
     const cursorName = 'filtered_cursor';
+        // 1. Check Redis cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      console.log('⚡ Returning from Redis cache');
+      return res.status(200).json(JSON.parse(cached));
+    }
+
 
     await client.query('BEGIN');
     await client.query(
@@ -41,6 +50,10 @@ const getFilteredStores = async (req, res) => {
     const result = await client.query(`FETCH ALL FROM ${cursorName}`);
     await client.query('COMMIT');
     res.status(200).json(result.rows);
+
+      // 3. Cache the result in Redis for 10 minutes
+    await redisClient.setEx(cacheKey, 600, JSON.stringify(result.rows));
+
   } catch (err) {
 
     await client.query('ROLLBACK');

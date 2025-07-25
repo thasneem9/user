@@ -18,6 +18,7 @@ const Home = () => {
 const NoteModal=lazy(()=>import('./NoteModal.jsx'))
 
 
+
   const user = useRecoilValue(userAtom);
   const setUser = useSetRecoilState(userAtom);
   const navigate = useNavigate();
